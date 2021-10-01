@@ -22,8 +22,11 @@ fun Application.module() {
     routing {
         val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
         webSocket("/chat") {
-            println("Adding a user.")
-            val thisConnection = Connection(this)
+            send("Please enter a username:")
+            val nameFrame = incoming.receive()
+            val name = (nameFrame as? Frame.Text)?.readText()
+
+            val thisConnection = Connection(this, name)
             connections += thisConnection
 
             try {
