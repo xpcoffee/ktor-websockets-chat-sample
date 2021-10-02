@@ -11,4 +11,4 @@ Done:
 
 - [x] basic tutorial
 - [x] feature-request: custom usernames
-- [x] feature-request: /whipser command
+- [x] feature-request: /whisper command
