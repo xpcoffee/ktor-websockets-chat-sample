@@ -6,10 +6,13 @@ import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.channels.ReceiveChannel
 import java.util.*
 import kotlin.collections.LinkedHashSet
 
-
+/**
+ * Entry point for the chat server
+ */
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused")
@@ -21,23 +24,22 @@ fun Application.module() {
     install(WebSockets)
     routing {
         val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
-        webSocket("/chat") {
-            send("Please enter a username:")
-            val nameFrame = incoming.receive()
-            val name = (nameFrame as? Frame.Text)?.readText()
+        val commandHandler = CommandHandler(connections)
 
-            val thisConnection = Connection(this, name)
+        /**
+         * Primary chat path
+         */
+        webSocket("/chat") {
+            val userName = promptUserName(this, incoming)
+            val thisConnection = Connection(this, userName)
             connections += thisConnection
 
             try {
                 send("You are connected! There are ${connections.count()} users here.")
                 for(frame in incoming) {
                     frame as? Frame.Text ?: continue
-                    val receivedText = frame.readText()
-                    val textWithUsername = "[${thisConnection.name}]: $receivedText"
-                    connections.forEach {
-                        it.session.send(textWithUsername)
-                    }
+                    val userInput = frame.readText()
+                    commandHandler.handle(thisConnection, userInput)
                 }
             } catch (e: Exception) {
                 println(e.localizedMessage)
@@ -47,4 +49,12 @@ fun Application.module() {
             }
         }
     }
+}
+
+/**
+ * Prompts a new chat user for their username
+ */
+suspend fun promptUserName(session: WebSocketSession, incoming: ReceiveChannel<Frame>): String? {
+    session.send("Please enter a username:")
+    return (incoming.receive() as? Frame.Text)?.readText()
 }
