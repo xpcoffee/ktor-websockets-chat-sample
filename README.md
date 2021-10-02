@@ -4,4 +4,11 @@
 
 # Creating a Chat App with WebSockets
 
-This repository is the code corresponding to the hands-on lab [Creating a WebSocket Chat](https://ktor.io/docs/creating-web-socket-chat.html). 
+This repository is xpcoffee@'s code corresponding to the hands-on lab [Creating a WebSocket Chat](https://ktor.io/docs/creating-web-socket-chat.html). 
+
+
+Done:
+
+- [x] basic tutorial
+- [x] feature-request: custom usernames
+- [x] feature-request: /whipser command
